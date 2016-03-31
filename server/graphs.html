@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <title>Graphs -AMD GPU ANALYZER</title>
+       
+       <script src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+
+      <!-- Compiled and minified CSS -->
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.5/css/materialize.min.css">
+
+      <!-- Compiled and minified JavaScript -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.5/js/materialize.min.js"></script>
+
+       <script type="text/javascript" src="https://cdnjs.com/libraries/chart.js"></script>
+
+
+        <style>
+
+        p{
+          padding-left: 5px;
+          font-size: 19px;
+        }
+
+
+        </style>
+    
+
+    </head>
+    <body>
+              <nav>
+                <ul class=" hide-on-med-and-down">
+                  <li><a href="/">Overview</a></li>
+                  <li><a href="/graphs">Graphs</a></li>
+                  <li><a href="/ip">IP Accesslist</a></li>
+                  <li><a href="/logs">Raw Logs</a></li>
+                </ul>
+                <ul id="slide-out" class="side-nav">
+                  <li><a href="/">Overview</a></li>
+                  <li><a href="/graphs">Graphs</a></li>
+                  <li><a href="/ip">IP Accesslist</a></li>
+                  <li><a href="/logs">Raw Logs</a></li>
+                </ul>
+                <a href="#" data-activates="slide-out" class="button-collapse"><i class="mdi-navigation-menu"></i></a>
+              </nav>
+
+
+
+
+        <div id ='content' class='row'>
+       
+            <div id='tables' class='right col s12 m12 l12'>
+              
+
+
+            </div>
+
+
+
+
+
+
+        </div>
+        <div id='butt'></div>
+        <script type="text/javascript">
+        var mahines = [];
+        var gpus = [];
+        var data = [];
+        
+        var myLineChart = new Chart(ctx).Line(data, options);
+
+
+
+        
+
+        var empty = true;
+          $.getJSON( "/logs", function( logs ) {
+           console.log(logs);
+           if(logs.length == 0)
+           {
+
+              $("#tables").append("<div id='empty'>No GPU data, check client machines or javascript console for errors</div>");
+           }
+           else
+           {
+            empty = false;
+           }
+
+            $.each( logs, function( key0, val0 ) {
+              $.each(val0, function( key1, val1 ){
+                if(key1 == 'name')
+                {
+                  $("#tables").append("<p style='font-weight: 900;'>Machine: "+ val1 +"</p>");
+
+                    var  table = "<table class=' responsive-table'>"+
+                      "<thead>"+
+                          "<tr>"+
+                              "<th data-field='name'>Name</th>"+
+                              "<th data-field='util'>Utilization</th>"+
+                              "<th data-field='temp'>Temperature</th>"+
+                              "<th data-field='fan'>Fan Usage</th>"+
+                              "<th data-field='eng'>Engine Clock</th>"+
+                              "<th data-field='mem'>Memory Clock</th>"+
+                              "<th data-field='volts'>Volts</th>"+
+                          "</tr>"+
+                        "</thead>"+
+
+                        "<tbody id='"+val1+"'>"+
+
+                        "</tbody>"+
+                      "</table>";
+
+                      $("#tables").append(table);
+
+                }
+                else
+                {
+
+                  $.each(val1, function( key2, val2 ){
+                    var latest = val2[val2.length -1];
+                    //console.log(latest);
+
+                      var row = "<tr class='"+latest.machine+"' id='"+latest.index+"'><td>"+ latest.name +"</td><td  ><div style='width: 400px; height: 120px;' id='"+latest.machine+latest.index+"-util'></div></td><td>"+latest.temp+"</td><td>"+latest.fan+"%</td><td>"+latest.eng+"MHz</td><td>"+latest.mem+"Mhz</td><td>"+latest.volts+"</td></tr>";
+                      if(true)//ready)
+                      {
+                        id = latest.machine+latest.index+'-util';
+                        label = 'Utilization';
+                        gauge_data = latest.util;
+                        google.charts.setOnLoadCallback(drawChart, true);
+                        
+                      }
+
+                      $("#"+latest.machine).append(row);
+                  });
+                }
+              });
+            });
+          });
+
+
+function refresh() {
+$.getJSON( "/logs", function( logs ) {
+           console.log(logs);
+            $.each( logs, function( key0, val0 ) {
+              $.each(val0, function( key1, val1 ){
+                if(key1 != 'name')
+                {
+                  if(empty)
+                  {
+                    $('#empty').html('');
+                    empty = false;
+                  }
+                  
+
+
+                  $.each(val1, function( key2, val2 ){
+                    var latest = val2[val2.length -1];
+                    //console.log(latest);
+                      if(!$("tbody#"+latest.machine).length)
+                      {//if not table for this machine exists, create it
+
+                        $("#tables").append("<p style='font-weight: 900;'>Machine: "+ latest.machine +"</p>");
+
+                          var  table = "<table class=' responsive-table'>"+
+                            "<thead>"+
+                                "<tr>"+
+                                    "<th data-field='name'>Name</th>"+
+                                    "<th data-field='util'>Utilization</th>"+
+                                    "<th data-field='temp'>Temperature</th>"+
+                                    "<th data-field='fan'>Fan Usage</th>"+
+                                    "<th data-field='eng'>Engine Clock</th>"+
+                                    "<th data-field='mem'>Memory Clock</th>"+
+                                    "<th data-field='volts'>Volts</th>"+
+                                "</tr>"+
+                              "</thead>"+
+
+                              "<tbody id='"+latest.machine+"'>"+
+
+                              "</tbody>"+
+                            "</table>";
+
+                            $("#tables").append(table);
+                          
+                      }
+                      if(!$("."+latest.machine+"#"+latest.index).length)
+                      {//if no table row for this gpu is found, create it
+                        console.log('not found');
+                          var row = "<tr class='"+latest.machine+"' id='"+latest.index+"'><td>"+ latest.name +"</td><td> "+latest.util+"%</td><td>"+latest.temp+"</td><td>"+latest.fan+"%</td><td>"+latest.eng+"MHz</td><td>"+latest.mem+"Mhz</td><td>"+latest.volts+"</td></tr>";
+                         $("#"+latest.machine).append(row);
+                      }
+
+
+                      var row = "<td>"+ latest.name +"</td><td> "+latest.util+"%</td><td>"+latest.temp+"</td><td>"+latest.fan+"%</td><td>"+latest.eng+"MHz</td><td>"+latest.mem+"Mhz</td><td>"+latest.volts+"</td>";
+                      
+
+                      $("."+latest.machine+"#"+latest.index).html(row);
+                  });
+                }
+              });
+            });
+          });
+
+
+
+
+
+
+    // make Ajax call here, inside the callback call
+    setTimeout(refresh, 7000);
+    
+}
+
+// initial call
+//setTimeout(refresh, 7000);
+
+$( document ).ready(function(){
+ $(".button-collapse").sideNav();
+});
+
+        </script>
+    </body>
+</html>

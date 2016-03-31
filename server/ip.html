@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <title>IP Accesslist -AMD GPU ANALYZER</title>
+       
+       <script src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+
+      <!-- Compiled and minified CSS -->
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.5/css/materialize.min.css">
+
+      <!-- Compiled and minified JavaScript -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.5/js/materialize.min.js"></script>
+
+        <style>
+        
+        p{
+          padding-left: 5px;
+          font-size: 19px;
+        }
+
+
+        </style>
+    
+
+    </head>
+    <body>
+              <nav>
+                <ul class=" hide-on-med-and-down">
+                  <li><a href="/">Overview</a></li>
+                  <li><a href="/ip">IP Accesslist</a></li>
+                  <li><a href="/logs">Raw Logs</a></li>
+                </ul>
+                <ul id="slide-out" class="side-nav">
+                  <li><a href="/">Overview</a></li>
+                  <li><a href="/ip">IP Accesslist</a></li>
+                  <li><a href="/logs">Raw Logs</a></li>
+                </ul>
+                <a href="#" data-activates="slide-out" class="button-collapse"><i class="mdi-navigation-menu"></i></a>
+              </nav>
+
+
+        <div id ='content' class='row'>
+           
+       
+            <div id='tables' class='right col s12 m12 l12'>
+                 <table class=' responsive-table'>
+                            <thead>
+                                <tr>
+                                    <th data-field='ip'>IP Address</th>
+                                </tr>
+                              </thead>
+
+                              <tbody id='tbody'>
+
+                              </tbody>
+                  </table>
+                  <div class='add'>
+                    <input type='text' id='add_ip'/>
+                    <button id='add_button'>Add</button>
+                  </div>
+                  <div class='remove'>
+                    <input type='text' id='remove_ip'/>
+                    <button id='remove_button'>Remove</button>
+                  </div>
+
+            </div>
+
+
+
+
+
+
+        </div>
+        <script>
+          $.getJSON( "/getIPs", function( ips ) {
+           console.log(ips);
+            if(ips.length <=0)
+            {
+              $('#tbody').html('<tr><td>No ip\'s in accesslist<td></tr>');
+            }
+            else
+            {
+
+
+              $.each(ips, function( index, ip ){
+                
+                   $('#tbody').append('<tr><td>'+ip+'<td></tr>');
+              });
+            }
+
+          });
+
+          $('#add_button').click( function(){
+            var ip = $('#add_ip').val();
+             $.ajax({
+                type: 'POST',
+                url: 'addIP',
+                data: {IP: ip},
+                dataType: 'json'
+              }).done(function(){
+              refresh();
+            });
+          });
+
+          $('#remove_button').click(function(){
+            var ip = $('#remove_ip').val();
+            $.ajax({
+                type: 'POST',
+                url: 'deleteIP',
+                data: {IP: ip},
+                dataType: 'json',
+            }).done(function(){
+              refresh();
+            });
+            
+          });
+
+
+
+        function refresh() {
+          $.getJSON( "/getIPs", function( ips ) {
+            console.log('hi');
+              $('#tbody').html('');
+
+              $.each(ips, function( index, ip ){
+                
+                   $('#tbody').append('<tr><td>'+ip+'<td></tr>');
+              });
+           });
+
+
+            // make Ajax call here, inside the callback call
+            
+        }
+
+        $( document ).ready(function(){
+         $(".button-collapse").sideNav();
+        });
+
+
+        </script>
+    </body>
+</html>

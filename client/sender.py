@@ -26,11 +26,12 @@ class Sender:
 		self.tempLabels = [-1] * self.size
 		self.voltsLabels = [-1] * self.size
 
-		self.sections = [range(self.size)]
+		self.sections = [-1] * self.size
 
-		self.name = [range(self.size)]
+		self.name = [-1] * self.size
+		self.machines = [-1] * self.size
 
-		self.firstTime = True
+		self.firstTime = [True] * self.size
 		
 		self.parse(self.retriever.getData())
 
@@ -50,9 +51,12 @@ class Sender:
 
 	def receive(self, gpu):
 		if gpu != -1:
-			if self.firstTime:
+
+
+
+			if self.firstTime[gpu.index]:
 				self.createFrame(gpu)
-				self.firstTime = False
+				self.firstTime[gpu.index] = False;
 			else:
 				self.updateFrame(gpu)
 

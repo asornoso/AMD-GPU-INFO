@@ -18,27 +18,30 @@ class Sender:
 
 		self.size = self.retriever.getSize()
 
-		self.gpus = None
-		self.engLabels = [-1] * self.size
-		self.memLabels = [-1] * self.size
-		self.fanLabels = [-1] * self.size
-		self.utilLabels = [-1] * self.size
-		self.tempLabels = [-1] * self.size
-		self.voltsLabels = [-1] * self.size
+		if self.size > 0:
+			self.gpus = None
+			self.engLabels = [-1] * self.size
+			self.memLabels = [-1] * self.size
+			self.fanLabels = [-1] * self.size
+			self.utilLabels = [-1] * self.size
+			self.tempLabels = [-1] * self.size
+			self.voltsLabels = [-1] * self.size
 
-		self.sections = [-1] * self.size
+			self.sections = [-1] * self.size
 
-		self.name = [-1] * self.size
-		self.machines = [-1] * self.size
+			self.name = [-1] * self.size
+			self.machines = [-1] * self.size
 
-		self.firstTime = [True] * self.size
-		
-		self.parse(self.retriever.getData())
+			self.firstTime = [True] * self.size
+			
+			# self.parse(self.retriever.getData())
 
 
-		self.callData()
+			self.callData()
 
-		self.display()
+			self.display()
+		else:
+			print('No AMD gpu\'s found: '+ str(self.size))
 
 
 	def callData(self):
@@ -50,10 +53,7 @@ class Sender:
 			self.receive(gpu)
 
 	def receive(self, gpu):
-		if gpu != -1:
-
-
-
+		if gpu != -1 and gpu.index < len(self.size):
 			if self.firstTime[gpu.index]:
 				self.createFrame(gpu)
 				self.firstTime[gpu.index] = False;
@@ -94,16 +94,17 @@ class Sender:
 		self.root.mainloop()
 
 	def updateFrame(self, gpu):
-
-		self.engLabels[gpu.index].configure(text ="ENGINGE CLOCK: "+str(gpu.engine)+"MHz")
-		self.memLabels[gpu.index].configure(text="MEMORY CLOCK: "+str(gpu.memory)+"MHz")
-		self.fanLabels[gpu.index].configure(text="FAN SPEED: "+str(gpu.fan)+"%")
-		self.utilLabels[gpu.index].configure(text="UTILIZATION: "+str(gpu.utilization)+"%")
-		self.tempLabels[gpu.index].configure(text="TEMPERATURE: "+str(gpu.temp)+"C")
-		self.voltsLabels[gpu.index].configure( text="VOLTS: "+str(gpu.volts))
+		if self.engLabels[gpu.index] != -1 :
+			self.engLabels[gpu.index].configure(text ="ENGINGE CLOCK: "+str(gpu.engine)+"MHz")
+			self.memLabels[gpu.index].configure(text="MEMORY CLOCK: "+str(gpu.memory)+"MHz")
+			self.fanLabels[gpu.index].configure(text="FAN SPEED: "+str(gpu.fan)+"%")
+			self.utilLabels[gpu.index].configure(text="UTILIZATION: "+str(gpu.utilization)+"%")
+			self.tempLabels[gpu.index].configure(text="TEMPERATURE: "+str(gpu.temp)+"C")
+			self.voltsLabels[gpu.index].configure( text="VOLTS: "+str(gpu.volts))
+		else:
+			print('Updating Frame, but no labels for this gpu exist')
 
 	def sendData(self, gpu):
-		# data = '{"machine":"'+self.machine+'", name":"'+str(gpu.name)+'", "temp":"'+str(gpu.temp)+'"}'
 		data = '{"machine":"'+self.machine+'", "name":"'+str(gpu.name)+'", "temp":"'+str(gpu.temp)+'", "util":"'+str(gpu.utilization)+'", "fan":"'+str(gpu.fan)+'", "volts":"'+str(gpu.volts)+'", "eng":"'+str(gpu.engine)+'", "mem":"'+str(gpu.memory)+'", "index":"'+str(gpu.index)+'"}'
 		self.socket.emit('gpu_data', data)
 		print "send!"

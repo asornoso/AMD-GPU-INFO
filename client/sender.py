@@ -53,7 +53,7 @@ class Sender:
 			self.receive(gpu)
 
 	def receive(self, gpu):
-		if gpu != -1 and gpu.index < len(self.size):
+		if gpu != -1 and gpu.index < self.size:
 			if self.firstTime[gpu.index]:
 				self.createFrame(gpu)
 				self.firstTime[gpu.index] = False;
@@ -94,7 +94,7 @@ class Sender:
 		self.root.mainloop()
 
 	def updateFrame(self, gpu):
-		if self.engLabels[gpu.index] != -1 :
+		if self.engLabels[gpu.index] != -1 and self.memLabels[gpu.index] != -1 and self.fanLabels[gpu.index] != -1 and self.utilLabels[gpu.index] != -1 and self.tempLabels[gpu.index] != -1 and self.voltsLabels[gpu.index] != -1:
 			self.engLabels[gpu.index].configure(text ="ENGINGE CLOCK: "+str(gpu.engine)+"MHz")
 			self.memLabels[gpu.index].configure(text="MEMORY CLOCK: "+str(gpu.memory)+"MHz")
 			self.fanLabels[gpu.index].configure(text="FAN SPEED: "+str(gpu.fan)+"%")
